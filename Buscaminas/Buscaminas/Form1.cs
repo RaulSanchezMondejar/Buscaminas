@@ -41,6 +41,7 @@ namespace Buscaminas
             matrizBotones2 = new Button[filas, columnas];
 
             for (int i = 0; i < filas; i++)
+            {
                 for (int j = 0; j < columnas; j++)
                 {
                     Button boton = new Button();
@@ -50,32 +51,62 @@ namespace Buscaminas
 
                     boton.Size = new Size(anchoBoton, anchoBoton);
                     boton2.Size = new Size(anchoBoton, anchoBoton);
-                    
-                    /*
-                    int numeroAleatorio = aleatorio.Next(5);
-
-                    if (numeroAleatorio == 1)
-                    {
-                        boton2.Text = "X";
-                    }
-                    else {
-                        boton2.Text = "";
-                    }
-                     */ 
 
                     boton.Location = new Point(i * anchoBoton, j * anchoBoton);
                     boton2.Location = new Point(i * anchoBoton, j * anchoBoton);
 
                     boton.Click += chequeaBoton;
-                    boton.Tag = "1";
-                    
+                    boton.Tag = "0";
+
                     matrizBotones[i, j] = boton;
                     matrizBotones2[i, j] = boton2;
 
                     panel1.Controls.Add(boton);
                     panel1.Controls.Add(boton2);
                 }
+            }
             poneMinas();
+            cuantaMinas();
+        }
+
+
+        private void cuantaMinas() 
+        {
+            for (int i = 0; i < filas; i++)
+            {
+                for (int j = 0; j < columnas; j++)
+                {
+                    int numeroBombas = 0;
+
+                    // Este for nos permite comprobar si hay "algo" alrededor de la celda pulsada.
+                    for (int k = -1; k <= 1; k++)
+                    {
+                        for (int l = -1; l <= 1; l++)
+                        {
+                            int f = i + k;
+                            int c = j + l;
+                            if ((c < columnas) & (c >= 0))
+                            {
+                                if ((f < filas) && (f >= 0))
+                                {
+                                    if (matrizBotones[c, f].Tag == "X")
+                                    {
+                                        numeroBombas++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ((matrizBotones[j, i].Tag != "X") && (numeroBombas > 0))
+                    { 
+                        // Se habra guardado el número total de bombas.
+                        matrizBotones[j, i].Tag  = numeroBombas.ToString();
+                        matrizBotones[j, i].Text = numeroBombas.ToString();
+                    }
+
+                }
+            }
+            // Fin del cuentaminas.
         }
 
         private void poneMinas() 
@@ -90,13 +121,14 @@ namespace Buscaminas
             {
                 x = aleatorio.Next(filas);
                 y = aleatorio.Next(columnas);
-                while (!matrizBotones[x, y].Tag.Equals("1")) 
+                while (!matrizBotones[x, y].Tag.Equals("0")) 
                 {
                     x = aleatorio.Next(filas);
                     y = aleatorio.Next(columnas);
                 }
-                matrizBotones[x, y].Tag = "2";
+                matrizBotones[x, y].Tag = "X";
                 matrizBotones[x, y].Text = "X";
+                matrizBotones[x, y].BackColor = Color.Orange;
             }
         }
 
@@ -113,34 +145,32 @@ namespace Buscaminas
             int fila    = b.Location.Y / anchoBoton;
 
 
-            // Este for nos permite comprobar si hay "algo" alrededor de la celda pulsada.
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    if ((columna + j < columnas) && (columna + j >= 0)) {
-                        if ((fila + i < filas) && (fila + i >= 0)) {
+            if (matrizBotones[columna, fila].Tag == "0") {
+                // Este for nos permite comprobar si hay "algo" alrededor de la celda pulsada.
+                for (int i = -1; i <= 1; i++)
+                {
+                    // Ponemos ese boton como plano
+                    b.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+
+                    // Chequeamos el resto de botones.
+                    for (int j = -1; j <= 1; j++)
+                    {
+                        int f = fila + i;
+                        int c = columna + j;
+                        if ((c < columnas) && (c >= 0) && (f < filas) && (f >= 0))
+                        {
                             /*
                              * Vamos a hacer un bucle recurrente, aunque no sea la manera más optima.
                              * Para poder salir, creamos el siguiente if que nos permitira salir.
-                             */ 
-                            if (matrizBotones[columna + j, fila + i].Visible != false)
+                             */
+                            if (matrizBotones[columna + j, fila + i].FlatStyle != System.Windows.Forms.FlatStyle.Flat)
                             {
-                               // if (!matrizBotones2[columna + j, fila + i].Text.Contains("X")) 
-                               // {
-                                    //matrizBotones[columna + i, fila + j].BackColor = Color.Coral;
-                                    matrizBotones[columna + j, fila + i].Visible = false;
-                                    // Vuelve a llamar a este método.
-                                    chequeaBoton(matrizBotones[columna + j, fila + i], e);
-                                //}
-                               
-                            }   
+                                chequeaBoton(matrizBotones[columna + j, fila + i], e);
+                            }
                         }
                     }
-                    /*
-                    //matrizBotones[columna + i, fila + j].BackColor = Color.Coral;
-                    
-                     */
-                }
-            } 
+                } 
+            }   
         }
     }
 }
